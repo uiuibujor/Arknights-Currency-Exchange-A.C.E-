@@ -1,0 +1,5 @@
+{
+  "name": "Arknights Currency Exchange (A.C.E)",
+  "description": "A futuristic currency converter styled after the Rhodes Island terminal interface from Arknights. Features real-time exchange rates powered by Gemini Search Grounding.",
+  "requestFramePermissions": []
+}
