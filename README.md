@@ -15,6 +15,6 @@ View your app in AI Studio: https://ai.studio/apps/drive/1GTapukqYNAXZPqjqIW-EXE
 
 1. Install dependencies:
    `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+2. No API key is required (rates are fetched from open.er-api.com)
 3. Run the app:
    `npm run dev`

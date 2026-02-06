@@ -18,7 +18,24 @@ export const ALL_CURRENCIES: Currency[] = [
   { code: 'MYR', name: '马来西亚林吉特', symbol: 'RM', flag: '🇲🇾' },
 ];
 
+export const REGION_NAME_BY_CURRENCY_CODE: Record<string, string> = {
+  USD: '美国',
+  CNY: '中国',
+  JPY: '日本',
+  EUR: '欧盟',
+  GBP: '英国',
+  HKD: '香港',
+  TWD: '台湾',
+  KRW: '韩国',
+  SGD: '新加坡',
+  AUD: '澳大利亚',
+  CAD: '加拿大',
+  THB: '泰国',
+  PHP: '菲律宾',
+  MYR: '马来西亚',
+};
+
 export const INITIAL_CURRENCY_CODES = ['USD', 'CNY', 'JPY', 'EUR', 'HKD'];
 
 export const SYSTEM_VERSION = "v3.12.04.L";
-export const DEPT_CODE = "罗德岛后勤部";
+export const DEPT_CODE = "熊猫汇率换算器";

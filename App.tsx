@@ -1,11 +1,41 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import {
+  DndContext, 
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragOverlay,
+  DragStartEvent,
+  DragEndEvent,
+  DropAnimation,
+  defaultDropAnimationSideEffects
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 import Layout from './components/Layout';
 import CurrencyRow from './components/CurrencyRow';
+import SortableCurrencyRow from './components/SortableCurrencyRow';
 import AddCurrencyModal from './components/AddCurrencyModal';
 import { ExchangeService } from './services/geminiService';
 import { ALL_CURRENCIES, INITIAL_CURRENCY_CODES } from './constants';
 import { ExchangeRates, Currency, GroundingSource } from './types';
+
+const dropAnimation: DropAnimation = {
+  sideEffects: defaultDropAnimationSideEffects({
+    styles: {
+      active: {
+        opacity: '0.5',
+      },
+    },
+  }),
+};
 
 const App: React.FC = () => {
   const [rates, setRates] = useState<ExchangeRates>({});
@@ -16,6 +46,14 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+  const [activeId, setActiveId] = useState<string | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   const exchangeService = useMemo(() => new ExchangeService(), []);
 
@@ -67,9 +105,42 @@ const App: React.FC = () => {
     return selectedCodes.map(code => ALL_CURRENCIES.find(c => c.code === code)!).filter(Boolean);
   }, [selectedCodes]);
 
+  const clearDragState = () => {
+    setActiveId(null);
+  };
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      setSelectedCodes((items) => {
+        const oldIndex = items.indexOf(active.id as string);
+        const newIndex = items.indexOf(over.id as string);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+
+    setActiveId(null);
+  };
+
+  const activeCurrency = useMemo(() => {
+    if (!activeId) return null;
+    return ALL_CURRENCIES.find(c => c.code === activeId);
+  }, [activeId]);
+
   return (
     <Layout>
-      <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">
         <div className="flex flex-col">
           <div className="flex items-center gap-2">
             <h2 className="text-xl font-black tracking-widest text-gray-900 uppercase italic">资产换算 / ASSET_CONVERSION</h2>
@@ -93,18 +164,39 @@ const App: React.FC = () => {
       </div>
 
       <div className="space-y-1">
-        {selectedCurrencies.map((currency) => (
-          <CurrencyRow
-            key={currency.code}
-            currency={currency}
-            value={calculateValue(currency.code)}
-            isBase={currency.code === baseCode}
-            onValueChange={(val) => handleValueChange(currency.code, val)}
-            onRemove={() => removeCurrency(currency.code)}
-            disabled={loading && Object.keys(rates).length === 0}
-          />
-        ))}
+        <SortableContext 
+          items={selectedCodes}
+          strategy={verticalListSortingStrategy}
+        >
+          {selectedCurrencies.map((currency) => (
+            <SortableCurrencyRow
+              key={currency.code}
+              id={currency.code}
+              currency={currency}
+              value={calculateValue(currency.code)}
+              isBase={currency.code === baseCode}
+              onValueChange={(val) => handleValueChange(currency.code, val)}
+              onRemove={() => removeCurrency(currency.code)}
+              disabled={loading && Object.keys(rates).length === 0}
+            />
+          ))}
+        </SortableContext>
       </div>
+
+      <DragOverlay dropAnimation={dropAnimation}>
+        {activeCurrency ? (
+          <div className="opacity-95 scale-105 shadow-2xl cursor-grabbing">
+            <CurrencyRow
+              currency={activeCurrency}
+              value={calculateValue(activeCurrency.code)}
+              isBase={activeCurrency.code === baseCode}
+              onValueChange={() => {}}
+              onRemove={() => {}}
+              disabled={true}
+            />
+          </div>
+        ) : null}
+      </DragOverlay>
 
       <div className="mt-8">
         <button 
@@ -159,6 +251,7 @@ const App: React.FC = () => {
            </div>
         </div>
       )}
+      </DndContext>
     </Layout>
   );
 };

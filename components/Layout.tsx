@@ -20,9 +20,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <div className="w-8 h-8 bg-white flex items-center justify-center font-bold text-lg text-black">RI</div>
             </div>
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold tracking-widest text-gray-900 uppercase italic">罗德岛</h1>
+              <h1 className="text-2xl md:text-3xl font-bold tracking-widest text-gray-900 uppercase italic">汇率换算器</h1>
               <div className="flex items-center gap-2 mt-0.5">
-                <span className="ak-bg-yellow text-black text-[10px] px-1 font-bold">后勤部</span>
+                <span className="ak-bg-yellow text-black text-[10px] px-1 font-bold">🐼熊猫</span>
                 <span className="text-[10px] text-gray-400 font-mono tracking-tighter">终端.PRTS.{SYSTEM_VERSION}</span>
               </div>
             </div>
@@ -46,7 +46,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <div className="fixed bottom-0 right-0 w-32 h-32 border-r-2 border-b-2 border-black/5 pointer-events-none" />
       
       <footer className="mt-8 flex justify-between items-end text-[10px] text-gray-400 font-mono">
-        <div>© 1097 罗德岛制药有限公司</div>
+        <div>© 1097 熊猫天才有限公司</div>
         <div className="flex gap-4">
           <span className="ak-cyan font-bold">高精度监控已开启</span>
           <span className="hidden sm:inline">DATA_STREAM_OK</span>

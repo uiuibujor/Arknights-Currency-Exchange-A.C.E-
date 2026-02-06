@@ -1,45 +1,28 @@
 
-import { GoogleGenAI } from "@google/genai";
 import { ExchangeRates, GroundingSource } from "../types";
 
 export class ExchangeService {
-  private ai: GoogleGenAI;
-
-  constructor() {
-    this.ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  }
-
   async fetchLatestRates(): Promise<{ rates: ExchangeRates; sources: GroundingSource[] }> {
     try {
-      // Use Gemini with Google Search to get actual current rates
-      const response = await this.ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
-        contents: "Provide the current mid-market exchange rates relative to 1 USD for the following currencies: CNY, JPY, EUR, GBP, HKD, TWD, KRW, SGD, AUD, CAD, THB, PHP, MYR. Format as JSON: {\"rates\": {\"CODE\": VALUE}, \"update_time\": \"...\"}",
-        config: {
-          tools: [{ googleSearch: {} }],
-          responseMimeType: "application/json"
-        },
-      });
-
-      let data;
-      try {
-        data = JSON.parse(response.text || '{}');
-      } catch (e) {
-        // Fallback if the model returns text instead of clean JSON despite config
-        const jsonMatch = response.text.match(/\{[\s\S]*\}/);
-        data = jsonMatch ? JSON.parse(jsonMatch[0]) : {};
+      const response = await fetch("https://open.er-api.com/v6/latest/USD");
+      if (!response.ok) {
+        throw new Error(`Exchange rate API request failed: ${response.status} ${response.statusText}`);
       }
 
-      // Ensure USD is 1
-      if (data.rates) {
-        data.rates['USD'] = 1;
+      const data = (await response.json()) as {
+        result?: string;
+        rates?: Record<string, number>;
+      };
+
+      if (data.result !== "success" || !data.rates) {
+        throw new Error("Exchange rate API response invalid");
       }
 
-      const sources = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
+      const rates: ExchangeRates = { ...data.rates, USD: 1 };
 
       return {
-        rates: data.rates || {},
-        sources: sources as GroundingSource[]
+        rates,
+        sources: []
       };
     } catch (error) {
       console.error("Error fetching exchange rates:", error);

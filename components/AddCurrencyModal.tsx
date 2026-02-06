@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Currency } from '../types';
-import { ALL_CURRENCIES } from '../constants';
+import { ALL_CURRENCIES, REGION_NAME_BY_CURRENCY_CODE } from '../constants';
 
 interface AddCurrencyModalProps {
   onSelect: (currency: Currency) => void;
@@ -11,11 +11,15 @@ interface AddCurrencyModalProps {
 
 const AddCurrencyModal: React.FC<AddCurrencyModalProps> = ({ onSelect, onClose, excludeCodes }) => {
   const [search, setSearch] = useState('');
+  const normalizedSearch = search.trim().toLowerCase();
   
   const filtered = ALL_CURRENCIES.filter(c => 
     !excludeCodes.includes(c.code) && 
-    (c.code.toLowerCase().includes(search.toLowerCase()) || 
-     c.name.toLowerCase().includes(search.toLowerCase()))
+    (
+      c.code.toLowerCase().includes(normalizedSearch) ||
+      c.name.toLowerCase().includes(normalizedSearch) ||
+      (REGION_NAME_BY_CURRENCY_CODE[c.code] ?? '').toLowerCase().includes(normalizedSearch)
+    )
   );
 
   return (
@@ -42,22 +46,25 @@ const AddCurrencyModal: React.FC<AddCurrencyModalProps> = ({ onSelect, onClose, 
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-1 custom-scrollbar">
-          {filtered.length > 0 ? filtered.map(currency => (
-            <button
-              key={currency.code}
-              onClick={() => onSelect(currency)}
-              className="w-full flex items-center p-3 hover:bg-yellow-400/5 border border-transparent hover:border-yellow-400/20 transition-all group rounded-sm"
-            >
-              <span className="text-2xl mr-4 ak-emoji leading-none">{currency.flag}</span>
-              <div className="flex flex-col items-start">
-                <span className="text-lg font-bold group-hover:ak-yellow transition-colors">{currency.code}</span>
-                <span className="text-[10px] text-gray-500 font-bold uppercase">{currency.name}</span>
-              </div>
-              <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
-                <span className="text-[10px] font-black ak-yellow">确认选择 -></span>
-              </div>
-            </button>
-          )) : (
+          {filtered.length > 0 ? filtered.map((currency) => {
+            const regionName = REGION_NAME_BY_CURRENCY_CODE[currency.code] ?? currency.code;
+            return (
+              <button
+                key={currency.code}
+                onClick={() => onSelect(currency)}
+                className="w-full flex items-center p-3 hover:bg-yellow-400/5 border border-transparent hover:border-yellow-400/20 transition-all group rounded-sm"
+              >
+                <span className="text-2xl mr-4 ak-emoji leading-none">{currency.flag}</span>
+                <div className="flex flex-col items-start">
+                  <span className="text-lg font-bold group-hover:ak-yellow transition-colors">{regionName}</span>
+                  <span className="text-[10px] text-gray-500 font-bold uppercase">{currency.code} · {currency.name}</span>
+                </div>
+                <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span className="text-[10px] font-black ak-yellow">确认选择</span>
+                </div>
+              </button>
+            );
+          }) : (
             <div className="text-center py-12 text-gray-300 font-mono uppercase text-[10px] tracking-widest">
               未搜索到匹配的资产条目
             </div>
