@@ -39,8 +39,8 @@ const CurrencyRow: React.FC<CurrencyRowProps> = ({
              {/* 移除 overflow-hidden 和 rounded-sm 以防某些系统裁剪 Emoji */}
              <span className="text-2xl md:text-3xl ak-emoji leading-none block">{currency.flag}</span>
              <div className="flex flex-col">
-               <span className="text-lg md:text-xl font-bold leading-none tracking-wider text-black">{regionName}</span>
-               <span className="text-[9px] text-gray-400 font-bold truncate max-w-[60px] md:max-w-[80px]">{currency.code} · {currency.name}</span>
+               <span className="text-lg md:text-xl font-bold leading-none tracking-wider text-black">{currency.name}</span>
+               <span className="text-[9px] text-gray-400 font-bold truncate max-w-[60px] md:max-w-[80px]">{currency.code} {regionName}</span>
              </div>
           </div>
         </div>
