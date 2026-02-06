@@ -17,7 +17,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="flex flex-col">
           <div className="flex items-center gap-3">
             <div className="bg-black p-1 rounded-sm">
-                <div className="w-8 h-8 bg-white flex items-center justify-center font-bold text-lg text-black">RI</div>
+                <div className="w-8 h-8 bg-white flex items-center justify-center font-bold text-xl text-black">🐼</div>
             </div>
             <div>
               <h1 className="text-2xl md:text-3xl font-bold tracking-widest text-gray-900 uppercase italic">汇率换算器</h1>
