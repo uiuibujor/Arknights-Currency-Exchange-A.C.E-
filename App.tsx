@@ -37,10 +37,24 @@ const dropAnimation: DropAnimation = {
   }),
 };
 
+const STORAGE_KEY_SELECTED_CODES = 'ace_selected_codes';
+
 const App: React.FC = () => {
   const [rates, setRates] = useState<ExchangeRates>({});
   const [sources, setSources] = useState<GroundingSource[]>([]);
-  const [selectedCodes, setSelectedCodes] = useState<string[]>(INITIAL_CURRENCY_CODES);
+  const [selectedCodes, setSelectedCodes] = useState<string[]>(() => {
+    if (typeof window === 'undefined') return INITIAL_CURRENCY_CODES;
+    try {
+      const stored = window.localStorage.getItem(STORAGE_KEY_SELECTED_CODES);
+      if (!stored) return INITIAL_CURRENCY_CODES;
+      const parsed = JSON.parse(stored);
+      if (!Array.isArray(parsed)) return INITIAL_CURRENCY_CODES;
+      const valid = parsed.filter((c) => typeof c === 'string' && ALL_CURRENCIES.some((cur) => cur.code === c));
+      return valid.length > 0 ? valid : INITIAL_CURRENCY_CODES;
+    } catch {
+      return INITIAL_CURRENCY_CODES;
+    }
+  });
   const [baseValue, setBaseValue] = useState<string>('100.00');
   const [baseCode, setBaseCode] = useState<string>('USD');
   const [loading, setLoading] = useState<boolean>(true);
@@ -103,6 +117,14 @@ const App: React.FC = () => {
 
   const selectedCurrencies = useMemo(() => {
     return selectedCodes.map(code => ALL_CURRENCIES.find(c => c.code === code)!).filter(Boolean);
+  }, [selectedCodes]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      window.localStorage.setItem(STORAGE_KEY_SELECTED_CODES, JSON.stringify(selectedCodes));
+    } catch {
+    }
   }, [selectedCodes]);
 
   const clearDragState = () => {
